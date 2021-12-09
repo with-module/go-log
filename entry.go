@@ -25,15 +25,16 @@ type (
 		Module string `config:"Module"`
 	}
 
-	LogLevel string
+	Level = string
+	Field = zap.Field
 )
 
 const (
-	DebugLevel LogLevel = "debug"
-	InfoLevel  LogLevel = "info"
-	WarnLevel  LogLevel = "warn"
-	ErrorLevel LogLevel = "error"
-	PanicLevel LogLevel = "panic"
+	DebugLevel Level = "debug"
+	InfoLevel  Level = "info"
+	WarnLevel  Level = "warn"
+	ErrorLevel Level = "error"
+	PanicLevel Level = "panic"
 )
 
 var inst *zap.SugaredLogger
@@ -112,7 +113,15 @@ func Panic(template string, args ...interface{}) {
 	inst.Panicf(template, args...)
 }
 
-func Print(level LogLevel, message string, keysAndValues ...interface{}) {
+func PrintMap(level string, message string, dataMap map[string]interface{}) {
+	var keyAndValues = make([]interface{}, len(dataMap))
+	for k, v := range dataMap {
+		keyAndValues = append(keyAndValues, With(k, v))
+	}
+	Print(level, message, keyAndValues...)
+}
+
+func Print(level string, message string, keysAndValues ...interface{}) {
 	var log func(msg string, fields ...interface{})
 	switch level {
 	case DebugLevel:
@@ -130,6 +139,10 @@ func Print(level LogLevel, message string, keysAndValues ...interface{}) {
 	}
 
 	log(message, keysAndValues...)
+}
+
+func With(key string, value interface{}) Field {
+	return zap.Any(key, value)
 }
 
 // Close function used to flush log buffer.
