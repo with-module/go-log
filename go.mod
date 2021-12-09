@@ -1,4 +1,4 @@
-module gitlab.com/with-junbach/go-modules/logger
+module gitlab.com/with-junbach/go-modules/log
 
 go 1.17
 
