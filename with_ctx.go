@@ -65,7 +65,7 @@ func KDPanic(ctx context.Context, data interface{}, template string, args ...int
 	logWithContext(ctx, PanicLevel, data, template, args)
 }
 
-func logWithContext(ctx context.Context, level LogLevel, data interface{}, template string, args []interface{}) {
+func logWithContext(ctx context.Context, level Level, data interface{}, template string, args []interface{}) {
 	var message = template
 	if len(args) > 0 {
 		message = fmt.Sprintf(template, args...)
