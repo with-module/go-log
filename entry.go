@@ -85,7 +85,7 @@ func InitLoggerInst(conf Config) error {
 		ErrorOutputPaths:  conf.ErrOutput,
 	}
 
-	log, err := zapConfig.Build(zap.AddStacktrace(zap.ErrorLevel), zap.AddCallerSkip(1), zap.Fields(logName))
+	log, err := zapConfig.Build(zap.AddStacktrace(zap.ErrorLevel), zap.AddCallerSkip(2), zap.Fields(logName))
 	if err != nil {
 		return fmt.Errorf("failed to initialize log instance: %v", err)
 	}
@@ -114,11 +114,11 @@ func Panic(template string, args ...interface{}) {
 }
 
 func PrintMap(level string, message string, dataMap map[string]interface{}) {
-	var keyAndValues = make([]interface{}, len(dataMap))
+	var keysAndValues = make([]interface{}, 0, len(dataMap))
 	for k, v := range dataMap {
-		keyAndValues = append(keyAndValues, With(k, v))
+		keysAndValues = append(keysAndValues, With(k, v))
 	}
-	Print(level, message, keyAndValues...)
+	Print(level, message, keysAndValues...)
 }
 
 func Print(level string, message string, keysAndValues ...interface{}) {
@@ -137,7 +137,6 @@ func Print(level string, message string, keysAndValues ...interface{}) {
 	default:
 		log = inst.Debugw
 	}
-
 	log(message, keysAndValues...)
 }
 
