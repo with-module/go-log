@@ -10,19 +10,19 @@ import (
 type (
 	Config struct {
 		// Log level: can be one of: debug, info, warn, error, panic
-		Level string `config:"Level"`
+		Level string `map:"Level"`
 
 		// Where log will be written: stdout, stderr, file path
-		Output []string `config:"Output"`
+		Output []string `map:"Output"`
 
 		// Where to write error output: eg. stderr
-		ErrOutput []string `config:"ErrOutput"`
+		ErrOutput []string `map:"ErrOutput"`
 
 		// Log output format: console, json
-		Format string `config:"Format"`
+		Format string `map:"Format"`
 
 		// Module to name the log instance, set to hostname if empty
-		Module string `config:"Module"`
+		Module string `map:"Module"`
 	}
 
 	Level = string
