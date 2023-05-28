@@ -10,6 +10,8 @@ run tests:
     - go get github.com/boumenot/gocover-cobertura
     - go run github.com/boumenot/gocover-cobertura < coverage.txt > coverage.xml
   artifacts:
+    paths:
+      - coverage/cobertura-coverage.xml
     reports:
       coverage_report:
         coverage_format: cobertura
