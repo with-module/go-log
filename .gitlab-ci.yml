@@ -1,3 +1,5 @@
+image: golang:1.20-alpine
+
 stages:
   - test
 
@@ -6,14 +8,12 @@ run tests:
   image: golang:1.20-alpine
   script:
     - go install
-    - go test ./... -coverprofile=coverage.txt -covermode count
-    - go get github.com/boumenot/gocover-cobertura
-    - go run github.com/boumenot/gocover-cobertura < coverage.txt > coverage.xml
+    - CGO_ENABLED=0 go test ./... -coverprofile=coverage-report.out
+    - go tool cover -html=coverage-report.out -o coverage-report.html
+    - go tool cover -func=coverage-report.out
   artifacts:
     paths:
-      - coverage.xml
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
+      - coverage-report.html
+    expire_in: 1 days
+  coverage: "/\\(statements\\)\\s+\\d+.?\\d+%/"
   only: [main]
