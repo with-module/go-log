@@ -10,12 +10,12 @@ func TestLoadConfig(withTest *testing.T) {
 	withTest.Run("LoadValidConfig", func(t *testing.T) {
 		cfg := Config{
 			Module: "log-test-svc",
-			Level:  "debug",
+			Level:  "error",
 			Output: "stderr",
 		}
-		err := LoadConfig(cfg, WithOutput(os.Stdout))
-		if err != nil {
-			t.Errorf("load log config must not fail: %v", err)
+		LoadConfig(cfg, WithOutput(os.Stdout))
+		if std.GetLevel() != ErrorLevel {
+			t.Errorf("log level must be [error], got: %s", std.GetLevel())
 		}
 	})
 
@@ -25,10 +25,9 @@ func TestLoadConfig(withTest *testing.T) {
 			Level:  "invalid-level",
 			Output: "stderr",
 		}
-		err := LoadConfig(cfg)
-		Error(err, "got error when load log config")
-		if err == nil {
-			t.Errorf("there must be error due to invalid config")
+		LoadConfig(cfg)
+		if std.GetLevel() != DebugLevel {
+			t.Errorf("log level must fallback to [debug], got: %s", std.GetLevel())
 		}
 	})
 }
