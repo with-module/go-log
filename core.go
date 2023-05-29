@@ -20,6 +20,6 @@ func Panic(err error, msg string) {
 	std.Panic().Err(err).Msg(msg)
 }
 
-func Std() Logger {
-	return std
+func Std() *Logger {
+	return &std
 }

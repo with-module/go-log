@@ -7,6 +7,11 @@ import (
 )
 
 func TestStd(t *testing.T) {
+	LoadConfig(Config{
+		Module: "test-std",
+		Level:  "Info",
+		Output: "stdout",
+	})
 	inst := Std()
 	inst.Info().Msg("message call with std instance")
 
