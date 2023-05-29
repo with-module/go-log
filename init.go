@@ -1,10 +1,10 @@
 package log
 
 import (
-	"fmt"
 	"github.com/rs/zerolog"
 	"os"
 	"strings"
+	"time"
 )
 
 type (
@@ -21,10 +21,19 @@ type (
 
 var std zerolog.Logger
 
-func New(cfg Config, options ...WithOption) (Logger, error) {
+const (
+	DebugLevel = zerolog.DebugLevel
+	InfoLevel  = zerolog.InfoLevel
+	WarnLevel  = zerolog.WarnLevel
+	ErrorLevel = zerolog.ErrorLevel
+	PanicLevel = zerolog.PanicLevel
+)
+
+func New(cfg Config, options ...WithOption) Logger {
 	level, err := zerolog.ParseLevel(cfg.Level)
 	if err != nil {
-		return std, fmt.Errorf("failed to parse log level: %v", err)
+		Error(err, "invalid log level, [debug] will be applied by default")
+		level = DebugLevel
 	}
 
 	output := os.Stdout
@@ -41,21 +50,19 @@ func New(cfg Config, options ...WithOption) (Logger, error) {
 		inst = fn(inst)
 	}
 
-	return inst, nil
+	return inst
 }
 
-func LoadConfig(cfg Config, opts ...WithOption) error {
-	logger, err := New(cfg, opts...)
-	if err != nil {
-		return fmt.Errorf("failed to apply log config: %v", err)
-	}
+func LoadConfig(cfg Config, opts ...WithOption) {
+	logger := New(cfg, opts...)
 	std = logger
 	std.Debug().Interface("data", cfg).Msg("log config has been loaded successfully")
-	return nil
 }
 
 func init() {
-	std = zerolog.New(os.Stdout).Level(zerolog.DebugLevel).With().
+	zerolog.DurationFieldUnit = time.Millisecond
+	zerolog.DurationFieldInteger = true
+	std = zerolog.New(os.Stdout).Level(DebugLevel).With().
 		Timestamp().
 		Caller().
 		Str("module", "log-service").

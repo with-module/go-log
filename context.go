@@ -5,7 +5,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func BindContext(ctx context.Context, bindingFields map[string]any) context.Context {
+func BindContext(ctx context.Context, bindingFields map[string]interface{}) context.Context {
 	return std.With().Fields(bindingFields).Logger().WithContext(ctx)
 }
 
