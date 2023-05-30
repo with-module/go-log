@@ -9,14 +9,19 @@ import (
 
 type (
 	Config struct {
-		Module string `config:"module" yaml:"module" json:"module"` // define module name. eg. awsome-api-web-service
+		Module string `config:"module" yaml:"module" json:"module"` // define module name. eg. awesome-api-web-service
 		Level  string `config:"level" yaml:"level" json:"level"`    // [debug, info, warn, error, fatal, panic]
 		Output string `config:"output" yaml:"output" json:"output"` // [stdout, stderr]
+		Caller struct {
+			Enabled   bool `config:"Enabled"`
+			SkipFrame int  `config:"SkipFrame"`
+		} `config:"Caller"`
 	}
 
-	WithOption = func(zl zerolog.Logger) zerolog.Logger
+	WithOption = func(Logger) Logger
 
-	Logger = zerolog.Logger
+	Logger  = zerolog.Logger
+	Context = zerolog.Context
 )
 
 var std zerolog.Logger
@@ -41,16 +46,18 @@ func New(cfg Config, options ...WithOption) Logger {
 		output = os.Stderr
 	}
 
-	inst := zerolog.New(output).Level(level).With().
-		Timestamp().
-		Caller().
-		Str("module", cfg.Module).
-		Logger()
+	inst := zerolog.New(output).Level(level)
 	for _, fn := range options {
 		inst = fn(inst)
 	}
 
-	return inst
+	ctx := inst.With().
+		Timestamp().
+		Str("module", cfg.Module)
+	if cfg.Caller.Enabled {
+		ctx = ctx.CallerWithSkipFrameCount(cfg.Caller.SkipFrame)
+	}
+	return ctx.Logger()
 }
 
 func LoadConfig(cfg Config, opts ...WithOption) {
