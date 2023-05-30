@@ -1,5 +1,7 @@
 package log
 
+import "os"
+
 func Debug(msg string) {
 	std.Debug().Msg(msg)
 }
@@ -20,8 +22,11 @@ func Panic(err error, msg string) {
 	std.Panic().Err(err).Msg(msg)
 }
 
+var exitFn = os.Exit
+
 func Fatal(err error, msg string) {
-	std.Fatal().Err(err).Msg(msg)
+	defer exitFn(1)
+	std.WithLevel(FatalLevel).Err(err).Msg(msg)
 }
 
 func Std() *Logger {

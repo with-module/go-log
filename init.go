@@ -4,6 +4,7 @@ import (
 	"github.com/rs/zerolog"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -24,13 +25,17 @@ type (
 	Context = zerolog.Context
 )
 
-var std zerolog.Logger
+var (
+	std   zerolog.Logger
+	setup sync.Once
+)
 
 const (
 	DebugLevel = zerolog.DebugLevel
 	InfoLevel  = zerolog.InfoLevel
 	WarnLevel  = zerolog.WarnLevel
 	ErrorLevel = zerolog.ErrorLevel
+	FatalLevel = zerolog.FatalLevel
 	PanicLevel = zerolog.PanicLevel
 )
 
@@ -61,9 +66,12 @@ func New(cfg Config, options ...WithOption) Logger {
 }
 
 func LoadConfig(cfg Config, opts ...WithOption) {
-	logger := New(cfg, opts...)
-	std = logger
-	std.Debug().Interface("data", cfg).Msg("log config has been loaded successfully")
+	setup.Do(func() {
+		logger := New(cfg, opts...)
+		std = logger
+		zerolog.DefaultContextLogger = &std
+		std.Debug().Interface("data", cfg).Msg("log config has been loaded successfully")
+	})
 }
 
 func init() {

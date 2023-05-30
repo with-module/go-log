@@ -3,15 +3,11 @@ package log
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
 func TestStd(t *testing.T) {
-	LoadConfig(Config{
-		Module: "test-std",
-		Level:  "Info",
-		Output: "stdout",
-	})
 	inst := Std()
 	inst.Info().Msg("message call with std instance")
 
@@ -19,6 +15,13 @@ func TestStd(t *testing.T) {
 	Info("[INFO] call log message")
 	Warn(fmt.Sprintf("[WARN] call log message: %s", "acceptable error"))
 	Error(fmt.Errorf("connection error"), "[ERROR] call log message")
+
+	exitFn = func(code int) {
+		Info(fmt.Sprintf("app exit with code %d", code))
+	}
+
+	defer func() { exitFn = os.Exit }()
+	Fatal(fmt.Errorf("crashing error"), "[FATAL] fatal error, exiting")
 
 	panicLogFn := func() {
 
