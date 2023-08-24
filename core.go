@@ -1,34 +1,51 @@
 package log
 
-import "os"
+import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
 
-func Debug(msg string) {
-	std.Debug().Msg(msg)
+type (
+	Logger struct {
+		*zap.SugaredLogger
+	}
+
+	Printer func(msg string, args ...any)
+)
+
+var inst *Logger
+
+func WithModule(name string) *Logger {
+	return inst.WithModule(name)
 }
 
-func Info(msg string) {
-	std.Info().Msg(msg)
+func PrintLog(mode string, msg string, args ...any) {
+	inst.PrintLog(mode, msg, args...)
 }
 
-func Warn(msg string) {
-	std.Warn().Msg(msg)
+func (c *Logger) WithModule(name string) *Logger {
+	return &Logger{c.Named(name)}
 }
 
-func Error(err error, msg string) {
-	std.Error().Err(err).Msg(msg)
-}
+func (c *Logger) PrintLog(mode string, msg string, args ...any) {
+	level, err := zapcore.ParseLevel(mode)
+	if err != nil {
+		level = c.Level()
+	}
 
-func Panic(err error, msg string) {
-	std.Panic().Err(err).Msg(msg)
-}
+	var fn Printer
+	switch level {
+	case zapcore.DebugLevel:
+		fn = c.Debugw
+	case zapcore.InfoLevel:
+		fn = c.Infow
+	case zapcore.ErrorLevel:
+		fn = c.Errorw
+	case zapcore.FatalLevel:
+		fn = c.Fatalw
+	default:
+		fn = c.Panicw
+	}
 
-var exitFn = os.Exit
-
-func Fatal(err error, msg string) {
-	defer exitFn(1)
-	std.WithLevel(FatalLevel).Err(err).Msg(msg)
-}
-
-func Std() *Logger {
-	return &std
+	fn(msg, args...)
 }
