@@ -49,3 +49,27 @@ func (c *Logger) PrintLog(mode string, msg string, args ...any) {
 
 	fn(msg, args...)
 }
+
+func Debug(msg string, args ...any) {
+	inst.Infow(msg, args...)
+}
+
+func Info(msg string, args ...any) {
+	inst.Infow(msg, args...)
+}
+
+func Warn(msg string, args ...any) {
+	inst.Warnw(msg, args...)
+}
+
+func Error(msg string, args ...any) {
+	inst.Errorw(msg, args...)
+}
+
+func Fatal(msg string, args ...any) {
+	inst.Fatalw(msg, args...)
+}
+
+func Panic(msg string, args ...any) {
+	inst.Panicw(msg, args...)
+}
