@@ -11,9 +11,18 @@ import (
 	"time"
 )
 
+var defaultConfig = Config{
+	Level:  "debug",
+	Format: core.JsonFormat,
+	Writer: WriterConfig{
+		Output: []string{WriterConsole},
+		Error:  []string{WriterConsoleError},
+	},
+}
+
 func TestInitLogger(t *testing.T) {
 	t.Run("fallback log level", func(t *testing.T) {
-		LoadConfig(Config{
+		err := LoadConfig(Config{
 			Level:  "invalid-config",
 			Format: core.JsonFormat,
 			Writer: WriterConfig{
@@ -21,69 +30,53 @@ func TestInitLogger(t *testing.T) {
 				Error:  []string{WriterConsoleError},
 			},
 		})
+		assert.NoError(t, err)
+		assert.NotNil(t, inst)
 		defer Flush()
 		assert.Equal(t, DefaultLogLevel, inst.Level().String(), "unexpected log level")
 		Info("print info log message")
 	})
 
 	t.Run("panic on invalid config", func(t *testing.T) {
-		fn := func() {
-			invalidConfig := Config{
-				Level:  DefaultLogLevel,
-				Format: core.PlainTextFormat,
-				Writer: WriterConfig{
-					Output: []string{"///invalid", "\\\\\\\\%invalid"},
-					Error:  []string{"///invalid", "\\\\\\\\%invalid"},
-				},
-			}
-			LoadConfig(invalidConfig)
+		invalidConfig := Config{
+			Level:  DefaultLogLevel,
+			Format: core.PlainTextFormat,
+			Writer: WriterConfig{
+				Output: []string{"///invalid", "\\\\\\\\%invalid"},
+				Error:  []string{"///invalid", "\\\\\\\\%invalid"},
+			},
 		}
-		assert.Panics(t, fn, "must panic")
+		err := LoadConfig(invalidConfig)
+		assert.ErrorContains(t, err, "failed to initiate default logger")
 	})
 }
 
 func TestBasicLog(t *testing.T) {
-	config := Config{
-		Level:  "debug",
-		Format: core.JsonFormat,
-		Writer: WriterConfig{
-			Output: []string{WriterConsole},
-			Error:  []string{WriterConsoleError},
-		},
-	}
-	LoadConfig(config)
+	err := LoadConfig(defaultConfig)
+	assert.NoError(t, err)
+	assert.NotNil(t, inst)
 	defer Flush()
 	PrintLog("debug", "using global instance to print log with debug mode")
 	Debug("print Debug log using default logger instance")
-	Info("print Info log using default logger instance", param.Str("format", config.Format))
+	Info("print Info log using default logger instance", param.Str("format", core.JsonFormat))
 	Warn("print Warn log using default logger instance")
-	log := Module("log-test")
-	log.PrintLog("error", "this log will print at error level")
-	log.Debugf("print debug message at %s", time.Now().Format(time.RFC3339))
+	testLog := Module("log-test")
+	testLog.PrintLog("error", "this log will print at error level")
+	testLog.Debugf("print debug message at %s", time.Now().Format(time.RFC3339))
 }
 
 func TestLogger_PrintLog(t *testing.T) {
-	LoadConfig(Config{
-		Level:  "debug",
-		Format: core.JsonFormat,
-		Writer: WriterConfig{
-			Output: []string{WriterConsole},
-			Error:  []string{WriterConsoleError},
-		},
-	})
+	err := LoadConfig(defaultConfig)
+	assert.NoError(t, err)
+	assert.NotNil(t, inst)
 	defer Flush()
 	Error("print error message", param.Err(errors.New("invalid input error")))
 }
 
 func TestPanic(t *testing.T) {
-	LoadConfig(Config{
-		Level:  "debug",
-		Format: core.JsonFormat,
-		Writer: WriterConfig{
-			Output: []string{WriterConsole},
-			Error:  []string{WriterConsoleError},
-		},
-	})
+	err := LoadConfig(defaultConfig)
+	assert.NoError(t, err)
+	assert.NotNil(t, inst)
 	defer Flush()
 
 	assert.Panics(t, func() {
@@ -96,14 +89,9 @@ func TestPanic(t *testing.T) {
 }
 
 func TestFatal(t *testing.T) {
-	LoadConfig(Config{
-		Level:  "debug",
-		Format: core.JsonFormat,
-		Writer: WriterConfig{
-			Output: []string{WriterConsole},
-			Error:  []string{WriterConsoleError},
-		},
-	}, zap.WithFatalHook(zapcore.WriteThenPanic))
+	err := LoadConfig(defaultConfig, zap.WithFatalHook(zapcore.WriteThenPanic))
+	assert.NoError(t, err)
+	assert.NotNil(t, inst)
 	defer Flush()
 
 	assert.Panics(t, func() {

@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"gitlab.com/with-junbach/go-modules/log/core"
 	"gitlab.com/with-junbach/go-modules/log/param"
 	"go.uber.org/zap"
@@ -22,24 +23,26 @@ type (
 )
 
 func init() {
-	LoadConfig(Config{
+	if err := LoadConfig(Config{
 		Level:  DefaultLogLevel,
 		Format: core.PlainTextFormat,
 		Writer: WriterConfig{
 			Output: []string{WriterConsole},
 			Error:  []string{WriterConsoleError},
 		},
-	})
+	}); err != nil {
+		log.Panicf("error: %s", err)
+	}
 }
 
-func LoadConfig(config Config, opts ...zap.Option) {
-	coreLogger, err := core.InitLogger(config, opts...)
+func LoadConfig(config Config, opts ...zap.Option) error {
+	initLogger, err := core.InitLogger(config, opts...)
 	if err != nil {
-		log.Panicf("failed to initiate default logger instance: %s", err)
+		return fmt.Errorf("failed to initiate default logger: %w", err)
 	}
-
-	inst = coreLogger
+	inst = initLogger
 	inst.Debugw("default logger instance has been initialized successfully", param.Obj("config", config))
+	return nil
 }
 
 func Flush() {
@@ -57,7 +60,7 @@ func PrintLog(mode string, msg string, args ...any) {
 }
 
 func Debug(msg string, args ...any) {
-	inst.Infow(msg, args...)
+	inst.Debugw(msg, args...)
 }
 
 func Info(msg string, args ...any) {
