@@ -7,6 +7,16 @@ import (
 	"strings"
 )
 
+const (
+	JsonFormat      = "json"
+	PlainTextFormat = "console"
+
+	WriterConsole      = "stdout"
+	WriterConsoleError = "stderr"
+
+	DefaultLogLevel = "info"
+)
+
 func LoadConfig(conf Config, opts ...zap.Option) {
 	level, err := zapcore.ParseLevel(conf.Level)
 	if err != nil {
@@ -43,14 +53,14 @@ func LoadConfig(conf Config, opts ...zap.Option) {
 		Sampling:          nil,
 		Encoding:          format,
 		EncoderConfig:     encoder,
-		OutputPaths:       conf.Output,
-		ErrorOutputPaths:  conf.ErrorOutput,
+		OutputPaths:       conf.Writer.Output,
+		ErrorOutputPaths:  conf.Writer.Error,
 		InitialFields:     nil,
 	}
 
 	core, err := zapConf.Build(opts...)
 	if err != nil {
-		log.Fatalf("failed to initialize logger inst: %s", err)
+		log.Panicf("failed to initialize logger inst: %s", err)
 	}
 
 	inst = &Logger{core.Sugar()}
@@ -59,9 +69,11 @@ func LoadConfig(conf Config, opts ...zap.Option) {
 
 func init() {
 	LoadConfig(Config{
-		Level:       "info",
-		Format:      PlainTextFormat,
-		Output:      []string{ConsoleOutput},
-		ErrorOutput: []string{ConsoleOutputError},
+		Level:  DefaultLogLevel,
+		Format: PlainTextFormat,
+		Writer: WriterConfig{
+			Output: []string{WriterConsole},
+			Error:  []string{WriterConsoleError},
+		},
 	})
 }

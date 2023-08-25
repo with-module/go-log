@@ -15,6 +15,13 @@ type (
 
 var inst *Logger
 
+func Flush() {
+	err := inst.Sync()
+	if err != nil {
+		inst.Errorw("failed to flush logger buffer", zap.Error(err))
+	}
+}
+
 func WithModule(name string) *Logger {
 	return inst.WithModule(name)
 }
