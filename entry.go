@@ -43,8 +43,7 @@ func LoadConfig(config Config, opts ...zap.Option) {
 }
 
 func Flush() {
-	err := inst.Close()
-	if err != nil {
+	if err := inst.Close(); err != nil {
 		inst.Errorw("failed to flush logger buffer", param.Err(err))
 	}
 }
