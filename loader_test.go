@@ -21,14 +21,13 @@ func TestInitLogger(t *testing.T) {
 	})
 
 	t.Run("panic on invalid config", func(t *testing.T) {
-
 		fn := func() {
 			invalidConfig := Config{
 				Level:  DefaultLogLevel,
 				Format: PlainTextFormat,
 				Writer: WriterConfig{
-					Output: []string{"///invalid"},
-					Error:  []string{"///invalid"},
+					Output: []string{"///invalid", "\\\\\\\\%invalid"},
+					Error:  []string{"///invalid", "\\\\\\\\%invalid"},
 				},
 			}
 			LoadConfig(invalidConfig)
