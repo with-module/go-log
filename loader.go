@@ -64,7 +64,7 @@ func LoadConfig(conf Config, opts ...zap.Option) {
 	}
 
 	inst = &Logger{core.Sugar()}
-	inst.Debug("logger instance has been initialized successfully", zap.Any("config", conf))
+	inst.Debugw("logger instance has been initialized successfully", AddObject("config", conf))
 }
 
 func init() {

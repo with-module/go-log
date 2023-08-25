@@ -1,6 +1,7 @@
 package log
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -9,18 +10,19 @@ import (
 )
 
 func TestBasicLog(t *testing.T) {
-	LoadConfig(Config{
+	config := Config{
 		Level:  "debug",
 		Format: JsonFormat,
 		Writer: WriterConfig{
 			Output: []string{WriterConsole},
 			Error:  []string{WriterConsoleError},
 		},
-	})
+	}
+	LoadConfig(config)
 	defer Flush()
 	PrintLog("debug", "using global instance to print log with debug mode")
 	Debug("print Debug log using default logger instance")
-	Info("print Info log using default logger instance")
+	Info("print Info log using default logger instance", AddString("format", config.Format))
 	Warn("print Warn log using default logger instance")
 	log := WithModule("log-test")
 	log.PrintLog("error", "this log will print at error level")
@@ -37,7 +39,7 @@ func TestLogger_PrintLog(t *testing.T) {
 		},
 	})
 	defer Flush()
-	Error("print error message")
+	Error("print error message", AddError(errors.New("invalid input error")))
 }
 
 func TestPanic(t *testing.T) {
