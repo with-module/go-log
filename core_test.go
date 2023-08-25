@@ -3,6 +3,7 @@ package log
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/with-junbach/go-modules/log/param"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"testing"
@@ -22,7 +23,7 @@ func TestBasicLog(t *testing.T) {
 	defer Flush()
 	PrintLog("debug", "using global instance to print log with debug mode")
 	Debug("print Debug log using default logger instance")
-	Info("print Info log using default logger instance", AddString("format", config.Format))
+	Info("print Info log using default logger instance", param.Str("format", config.Format))
 	Warn("print Warn log using default logger instance")
 	log := WithModule("log-test")
 	log.PrintLog("error", "this log will print at error level")
@@ -39,7 +40,7 @@ func TestLogger_PrintLog(t *testing.T) {
 		},
 	})
 	defer Flush()
-	Error("print error message", AddError(errors.New("invalid input error")))
+	Error("print error message", param.Err(errors.New("invalid input error")))
 }
 
 func TestPanic(t *testing.T) {

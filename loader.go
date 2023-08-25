@@ -1,6 +1,7 @@
 package log
 
 import (
+	"gitlab.com/with-junbach/go-modules/log/param"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
@@ -64,7 +65,7 @@ func LoadConfig(conf Config, opts ...zap.Option) {
 	}
 
 	inst = &Logger{core.Sugar()}
-	inst.Debugw("logger instance has been initialized successfully", AddObject("config", conf))
+	inst.Debugw("logger instance has been initialized successfully", param.Obj("config", conf))
 }
 
 func init() {

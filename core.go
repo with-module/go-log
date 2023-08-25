@@ -1,6 +1,7 @@
 package log
 
 import (
+	"gitlab.com/with-junbach/go-modules/log/param"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -18,7 +19,7 @@ var inst *Logger
 func Flush() {
 	err := inst.Sync()
 	if err != nil {
-		inst.Errorw("failed to flush logger buffer", zap.Error(err))
+		inst.Errorw("failed to flush logger buffer", param.Err(err))
 	}
 }
 
