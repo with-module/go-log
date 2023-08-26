@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"fmt"
 	"gitlab.com/with-junbach/go-modules/log/core"
 	"gitlab.com/with-junbach/go-modules/log/param"
@@ -8,35 +9,24 @@ import (
 	"log"
 )
 
-const (
-	WriterConsole      = "stdout"
-	WriterConsoleError = "stderr"
-
-	DefaultLogLevel = "info"
-)
-
-var inst *core.BaseLogger
-
 type (
-	Config       = core.Config
-	WriterConfig = core.WriterConfig
+	Config = core.Config
+	Logger = core.Logger
 )
+
+var inst *Logger
 
 func init() {
 	if err := LoadConfig(Config{
-		Level:  DefaultLogLevel,
-		Format: core.PlainTextFormat,
-		Writer: WriterConfig{
-			Output: []string{WriterConsole},
-			Error:  []string{WriterConsoleError},
-		},
+		Level:  "debug",
+		Format: core.FormatJson,
 	}); err != nil {
 		log.Panicf("error: %s", err)
 	}
 }
 
 func LoadConfig(config Config, opts ...zap.Option) error {
-	initLogger, err := core.InitLogger(config, opts...)
+	initLogger, err := core.NewLogger(config, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to initiate default logger: %w", err)
 	}
@@ -46,12 +36,13 @@ func LoadConfig(config Config, opts ...zap.Option) error {
 }
 
 func Flush() {
-	if err := inst.Close(); err != nil {
+	inst.Debug("flush logger buffer")
+	if err := inst.Flush(); err != nil {
 		inst.Errorw("failed to flush logger buffer", param.Err(err))
 	}
 }
 
-func Module(name string) *core.BaseLogger {
+func Module(name string) *Logger {
 	return inst.Module(name)
 }
 
@@ -81,4 +72,16 @@ func Fatal(msg string, args ...any) {
 
 func Panic(msg string, args ...any) {
 	inst.Panicw(msg, args...)
+}
+
+func BindContext(ctx context.Context, fields ...any) context.Context {
+	return inst.BindContext(ctx, fields...)
+}
+
+func Ctx(ctx context.Context) *Logger {
+	return inst.Ctx(ctx)
+}
+
+func CtxLog(ctx context.Context, mode string, msg string, args ...any) {
+	inst.CtxLog(ctx, mode, msg, args...)
 }

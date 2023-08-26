@@ -1,45 +1,47 @@
 package core
 
 import (
+	"errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 )
 
-type (
-	BaseLogger struct {
-		*zap.SugaredLogger
-	}
-
-	Printer func(msg string, args ...any)
-)
-
-func (b *BaseLogger) Module(name string) *BaseLogger {
-	return &BaseLogger{b.Named(name)}
+type Logger struct {
+	*zap.SugaredLogger
 }
 
-func (b *BaseLogger) PrintLog(mode string, msg string, args ...any) {
+func (c *Logger) Module(name string) *Logger {
+	return &Logger{c.Named(name)}
+}
+
+func (c *Logger) PrintLog(mode string, msg string, args ...any) {
 	level, err := zapcore.ParseLevel(mode)
 	if err != nil {
-		level = b.Level()
+		level = c.Level()
 	}
-
-	var fn Printer
+	var fn func(msg string, args ...any)
 	switch level {
 	case zapcore.DebugLevel:
-		fn = b.Debugw
+		fn = c.Debugw
 	case zapcore.InfoLevel:
-		fn = b.Infow
+		fn = c.Infow
 	case zapcore.ErrorLevel:
-		fn = b.Errorw
+		fn = c.Errorw
+	case zapcore.WarnLevel:
+		fn = c.Warnw
 	case zapcore.FatalLevel:
-		fn = b.Fatalw
+		fn = c.Fatalw
 	default:
-		fn = b.Panicw
+		fn = c.Panicw
 	}
-
 	fn(msg, args...)
 }
 
-func (b *BaseLogger) Close() error {
-	return b.Sync()
+func (c *Logger) Flush() error {
+	err := c.Sync()
+	if err == nil || errors.Is(err, os.ErrInvalid) {
+		return nil
+	}
+	return err
 }

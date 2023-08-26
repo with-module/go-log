@@ -7,20 +7,36 @@ import (
 )
 
 const (
-	JsonFormat      = "json"
-	PlainTextFormat = "console"
+	FormatJson      = "json"
+	FormatPlainText = "console"
+
+	WriterConsole      = "stdout"
+	WriterConsoleError = "stderr"
 )
 
-func InitLogger(conf Config, opts ...zap.Option) (*BaseLogger, error) {
+type (
+	Config struct {
+		Level  string       `json:"level" yaml:"level" config:"level"`
+		Format string       `json:"format" yaml:"format" config:"format"`
+		Writer WriterConfig `json:"writer" yaml:"writer" config:"writer"`
+	}
+
+	WriterConfig struct {
+		Output []string `json:"output" yaml:"output" config:"output"`
+		Error  []string `json:"error" yaml:"error" config:"error"`
+	}
+)
+
+func NewLogger(conf Config, opts ...zap.Option) (*Logger, error) {
 	level, err := zapcore.ParseLevel(conf.Level)
 	if err != nil {
 		level = zapcore.InfoLevel
 	}
 
-	format := PlainTextFormat
+	format := FormatPlainText
 	encoderLevel := zapcore.CapitalColorLevelEncoder
-	if strings.EqualFold(conf.Format, JsonFormat) {
-		format = JsonFormat
+	if strings.EqualFold(conf.Format, FormatJson) {
+		format = FormatJson
 		encoderLevel = zapcore.CapitalLevelEncoder
 	}
 
@@ -39,7 +55,7 @@ func InitLogger(conf Config, opts ...zap.Option) (*BaseLogger, error) {
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	zapConf := zap.Config{
+	builder := zap.Config{
 		Level:             zap.NewAtomicLevelAt(level),
 		Development:       false,
 		DisableCaller:     false,
@@ -47,14 +63,21 @@ func InitLogger(conf Config, opts ...zap.Option) (*BaseLogger, error) {
 		Sampling:          nil,
 		Encoding:          format,
 		EncoderConfig:     encoder,
-		OutputPaths:       conf.Writer.Output,
-		ErrorOutputPaths:  conf.Writer.Error,
+		OutputPaths:       []string{WriterConsole},
+		ErrorOutputPaths:  []string{WriterConsoleError},
 		InitialFields:     nil,
 	}
 
-	core, err := zapConf.Build(opts...)
+	if writers := conf.Writer.Output; len(writers) > 0 {
+		builder.OutputPaths = writers
+	}
+	if writers := conf.Writer.Error; len(writers) > 0 {
+		builder.ErrorOutputPaths = writers
+	}
+
+	core, err := builder.Build(opts...)
 	if err != nil {
 		return nil, err
 	}
-	return &BaseLogger{core.Sugar()}, nil
+	return &Logger{core.Sugar()}, nil
 }
