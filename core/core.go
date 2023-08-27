@@ -45,3 +45,27 @@ func (c *Logger) Flush() error {
 	}
 	return err
 }
+
+func (c *Logger) Debug(msg string, args ...any) {
+	c.Debugw(msg, args...)
+}
+
+func (c *Logger) Info(msg string, args ...any) {
+	c.Infow(msg, args...)
+}
+
+func (c *Logger) Warn(msg string, args ...any) {
+	c.Warnw(msg, args...)
+}
+
+func (c *Logger) Error(msg string, args ...any) {
+	c.Errorw(msg, args...)
+}
+
+func (c *Logger) Fatal(msg string, args ...any) {
+	c.Fatalw(msg, args...)
+}
+
+func (c *Logger) Panic(msg string, args ...any) {
+	c.Panicw(msg, args...)
+}
