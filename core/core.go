@@ -5,6 +5,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"slices"
+	"syscall"
 )
 
 type Logger struct {
@@ -38,9 +40,15 @@ func (c *Logger) PrintLog(mode string, msg string, args ...any) {
 	fn(msg, args...)
 }
 
+func isAcceptedFlushErr(inputErr error) bool {
+	return slices.ContainsFunc([]error{os.ErrInvalid, syscall.EBADF, syscall.ENOTTY}, func(err error) bool {
+		return errors.Is(inputErr, err)
+	})
+}
+
 func (c *Logger) Flush() error {
 	err := c.Sync()
-	if err == nil || errors.Is(err, os.ErrInvalid) {
+	if err == nil || isAcceptedFlushErr(err) {
 		return nil
 	}
 	return err
