@@ -93,6 +93,6 @@ func TestCtxLog(t *testing.T) {
 	assert.IsType(t, new(Logger), log)
 
 	CtxLog(ctx, "invalid-mode", "this log will print at debug level and use global inst due to empty ctx")
-	log.CtxLog(ctx, "info", "print info message with request-id and latency duration", "latency", time.Millisecond*200)
+	log.CtxLog(ctx, "info", "print info message with request-id and latency duration", param.Dur("responseTime", time.Millisecond*200))
 
 }

@@ -13,8 +13,14 @@ type Logger struct {
 	*zap.SugaredLogger
 }
 
-func (c *Logger) Module(name string) *Logger {
-	return &Logger{c.Named(name)}
+type Option = zap.Option
+
+func (c *Logger) Module(name string, opts ...Option) *Logger {
+	logger := c.Named(name)
+	if len(opts) > 0 {
+		logger = logger.WithOptions(opts...)
+	}
+	return &Logger{logger}
 }
 
 func (c *Logger) PrintLog(mode string, msg string, args ...any) {

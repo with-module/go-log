@@ -27,7 +27,7 @@ type (
 	}
 )
 
-func NewLogger(conf Config, opts ...zap.Option) (*Logger, error) {
+func NewLogger(conf Config, opts ...Option) (*Logger, error) {
 	level, err := zapcore.ParseLevel(conf.Level)
 	if err != nil {
 		level = zapcore.InfoLevel
@@ -74,7 +74,7 @@ func NewLogger(conf Config, opts ...zap.Option) (*Logger, error) {
 	if writers := conf.Writer.Error; len(writers) > 0 {
 		builder.ErrorOutputPaths = writers
 	}
-
+	opts = append(opts, zap.AddCallerSkip(1))
 	core, err := builder.Build(opts...)
 	if err != nil {
 		return nil, err

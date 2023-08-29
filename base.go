@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gitlab.com/with-junbach/go-modules/log/core"
 	"gitlab.com/with-junbach/go-modules/log/param"
-	"go.uber.org/zap"
 	"log"
 )
 
@@ -25,13 +24,13 @@ func init() {
 	}
 }
 
-func LoadConfig(config Config, opts ...zap.Option) error {
+func LoadConfig(config Config, opts ...core.Option) error {
 	initLogger, err := core.NewLogger(config, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to initiate default logger: %w", err)
 	}
 	inst = initLogger
-	inst.Debugw("default logger instance has been initialized successfully", param.Obj("config", config))
+	inst.Debugw("default logger instance has been initialized successfully", param.Any("config", config))
 	return nil
 }
 
@@ -42,8 +41,8 @@ func Flush() {
 	}
 }
 
-func Module(name string) *Logger {
-	return inst.Module(name)
+func Module(name string, opts ...core.Option) *Logger {
+	return inst.Module(name, opts...)
 }
 
 func PrintLog(mode string, msg string, args ...any) {
