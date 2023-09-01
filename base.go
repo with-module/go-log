@@ -30,14 +30,14 @@ func LoadConfig(config Config, opts ...core.Option) error {
 		return fmt.Errorf("failed to initiate default logger: %w", err)
 	}
 	inst = initLogger
-	inst.Debugw("default logger instance has been initialized successfully", param.Any("config", config))
+	inst.Debug("default logger instance has been initialized successfully", param.Any("config", config))
 	return nil
 }
 
 func Flush() {
 	inst.Debug("flush logger buffer")
 	if err := inst.Flush(); err != nil {
-		inst.Errorw("failed to flush logger buffer", param.Err(err))
+		inst.Error("failed to flush logger buffer", param.Err(err))
 	}
 }
 
