@@ -1,4 +1,4 @@
-module gitlab.com/with-junbach/go-modules/log
+module github.com/with-module/go-log
 
 go 1.21
 
