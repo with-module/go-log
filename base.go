@@ -3,8 +3,8 @@ package log
 import (
 	"context"
 	"fmt"
-	"gitlab.com/with-junbach/go-modules/log/core"
-	"gitlab.com/with-junbach/go-modules/log/param"
+	"github.com/with-module/go-log/core"
+	"github.com/with-module/go-log/param"
 	"log"
 )
 
